@@ -1,0 +1,33 @@
+{
+  "name": "nolia-office",
+  "type": "module",
+  "version": "1.2.0",
+  "description": "Web application for a relaxing, customizable study/work environment inspired by Animal Crossing.",
+  "author": "Skalis07",
+  "scripts": {
+    "dev": "astro dev",
+    "dev:pages": "set BASE_PATH=/Nolia-Office/&& astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "astro": "^5.12.9",
+    "tailwindcss": "^4.1.18"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "autoprefixer": "^10.4.24",
+    "eslint": "^9.39.2",
+    "globals": "^16.5.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,92 @@
+---
+// ============================================================================
+// Archivo: src/pages/index.astro
+// Página Astro que funciona en local y en GitHub Pages usando import.meta.env.BASE_URL
+// ============================================================================
+// Frontmatter: bloque ejecutado en build. Sirve para preparar datos del template.
+
+import type { ImageMetadata } from 'astro'; // Metadata de imagen (la URL final vive en .src)
+import '../styles/index.css'; // CSS global de la página
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Title from '../components/Title.astro';
+import Frame from '../components/Frame.astro';
+import DayNightToggle from '../components/DayNightToggle.astro';
+import DimOverlay from '../components/DimOverlay.astro';
+
+// ============================================================================
+// LISTA DE GIFs EN BUILD (Astro + Vite)
+// - Escanea archivos en src/assets/gifs
+// - Astro devuelve ImageMetadata, usamos .src como URL final
+// - Estos datos se inyectan al HTML (data-gifs) y al <img> inicial
+// ============================================================================
+// Mapa { rutaDelArchivo -> ImageMetadata } generado en build
+const gifModules = import.meta.glob('../assets/gifs/*.gif', {
+  eager: true,        // Importa TODO en build (no lazy)
+  import: 'default'   // Toma la export default (ImageMetadata)
+}) as Record<string, ImageMetadata>;
+
+// Lista ordenada por nombre para tener un orden estable
+const gifEntries = Object.entries(gifModules)
+  .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+
+// URLs finales para inyectarlas en data-gifs
+const gifUrls = gifEntries.map(([, img]) => img.src);
+
+// Primer GIF para el <img> inicial (fallback si no hay lista)
+const initialGif = gifUrls[0] ?? '';
+---
+
+<!--=====================================================================================-->
+<!--=====================================================================================-->
+
+<BaseLayout title="Para mi princesa <3">
+  <!-- =========================================================================
+       CONTENEDOR GENERAL DE LA PÁGINA
+       - Envuelve todo el contenido visible.
+       - Define la variable CSS --bg-url para el fondo (compatible con BASE_URL).
+       ======================================================================== -->
+  <!-- Lista de GIFs (build-time) serializada para que el entry la lea en runtime -->
+  <div class="page"
+       data-base={import.meta.env.BASE_URL}
+       data-gifs={JSON.stringify(gifUrls)}
+       style={`--bg-url: url(${import.meta.env.BASE_URL}img/fondo.png)`}>
+
+    <!-- =====================================================================
+         TÍTULO PRINCIPAL
+         - El contenedor controla padding, animaciones y escalado dinámico.
+         ===================================================================== -->
+    <Title text="Susan WIP" />
+
+    <!-- =====================================================================
+         FRAME (AGRUPA EL GIF + BARRA DE MÚSICA)
+         - Mantiene ancho máximo y alinea todo al centro.
+         ===================================================================== -->
+    <Frame initialGif={initialGif} baseUrl={import.meta.env.BASE_URL} />
+
+  </div> <!-- /.page -->
+
+  <!-- ========================================================================
+       TIRITA SOL / LUNA (MODO DÍA / NOCHE)
+       - Control visual fijo al costado derecho de la pantalla.
+       - Permite alternar entre modo claro y modo oscuro.
+       ======================================================================== -->
+  <!-- Componente del control día/noche -->
+  <DayNightToggle />
+
+  <!-- ========================================================================
+       CAPA DE OSCURECIDO (OVERLAY)
+       - Se muestra encima del contenido cuando el modo noche está activo.
+       - Oscurece visualmente sin bloquear la interfaz.
+       ======================================================================== -->
+  <!-- Componente de overlay que el JS activa/desactiva -->
+  <DimOverlay />
+
+  <!-- ========================================================================
+       ENTRY DEL CLIENTE
+       - Astro procesa este script (src en /src) y lo incluye en el HTML final.
+       - Se carga como módulo y se ejecuta cuando el HTML ya se cargó.
+       - main.ts lee data-gifs del HTML y arranca la app modular.
+       IMPORTANTE: no agregar atributos extra (type/async/defer) o Astro cambia el modo de carga.
+       ======================================================================== -->
+  <script src="../client/main.ts"></script>
+</BaseLayout>

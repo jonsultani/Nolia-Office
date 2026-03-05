@@ -1,0 +1,504 @@
+@import "tailwindcss";
+@config "../../tailwind.config.cjs";
+
+*, *::before, *::after { box-sizing: border-box; } /* Evita que el padding/border agranden el tamaño real (está principalmente por estándar y buena práctica) */
+
+    :root{
+      --frame-max:1200px; /* Ancho base compartido por título y frame */
+      --page-pad:10px; /* Padding horizontal/vertical base de la página */
+      --color-bg:#2a5b3d; /* Fondo principal */
+      --color-text:#000; /* Texto principal */
+      --color-white:#fff; /* Blanco base */
+      --color-bar:#5aa7a6; /* Barra de música */
+      --color-bar-border:rgba(255,255,255,.75); /* Borde de barra */
+      --white-65:rgba(255,255,255,.65); /* Blancos con transparencia */
+      --white-18:rgba(255,255,255,.18);
+      --white-12:rgba(255,255,255,.12);
+      --radius-lg:20px; /* Radio grande */
+      --radius-pill:9999px; /* Radio tipo pastilla */
+      --border-thick:5px; /* Borde grueso */
+      --border-btn:3px; /* Borde de botones/bolita */
+      --shadow-card:0 4px 15px rgba(0,0,0,.3);
+      --shadow-bar:0 4px 12px rgba(0,0,0,.25);
+      --shadow-thumb:0 1px 2px rgba(0,0,0,.25);
+      --shadow-thumb-lg:0 3px 6px rgba(0,0,0,.25);
+      --shadow-handle:inset 0 2px 0 rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.15);
+      --shadow-handle-hover:inset 0 2px 0 rgba(0,0,0,.1), 0 3px 10px rgba(0,0,0,.2);
+      --slider-track-h:6px; /* Alto de la barra del volumen */
+      --slider-thumb:16px; /* Tamaño del circulito */
+      --bar-pad:10px 16px; /* Padding base de la barra */
+      --bar-pad-compact:8px 10px; /* Padding en pantallas chicas/Notion */
+      --bar-gap:10px; /* Separación base de íconos */
+      --bar-gap-compact:8px; /* Separación compacta */
+      --frame-gap:12px; /* Espacio entre GIF y barra */
+    }
+
+    @layer components {
+      .title-wrap{ /* Selector CSS '.title-wrap': aplica a cualquier elemento con esa clase */
+        @apply w-full; /* La caja ocupa todo el ancho disponible de su contenedor padre. */
+        max-width:var(--frame-max); /* Ancho máximo */
+        @apply mx-auto; /* Centrado para que calce con el frame */
+        @apply overflow-visible; /* Permite que el contenido que sobresalga (por ejemplo, un título escalado con transform) siga siendo visible y no se recorte */
+        @apply pt-1; /* Colchón (espacio) superior */
+        @apply relative; /* Mantiene la posición normal del elemento, pero permite usar desplazamientos (top/left/etc.) */
+        @apply z-title; /* Asegura que esta capa quede por encima de otros elementos con z-index menor. En tu página ayuda a que el título no quede tapado por overlays o fondos animados. */
+        transition: none; /* Evita animaciones raras: ajuste instantáneo */
+        will-change: height; /* Indica al navegador que la altura probablemente cambiará pronto, optimizando el renderizado (mejora el rendimiento de animaciones). */
+      }
+      
+      #pageTitle{ /* Selector CSS '#pageTitle': aplica al elemento con id="pageTitle" (el título principal). */
+        @apply inline-block; /* Se comporta como elemento en línea pero permite ancho/alto y transform sin ocupar toda la fila. */
+        @apply whitespace-nowrap; /* Evita que el texto haga saltos de línea: todo el título se mantiene en una sola línea. */
+        transform-origin: left top; /* Punto de origen de las transformaciones (scale, etc.) en la esquina superior izquierda del título. */
+        line-height:1.15; /* Ajusta el espacio vertical entre líneas para que el título se vea más compacto y legible. */
+        font-size: clamp(14px, 4vw, 28px); /* Tamaño de fuente fluido: mínimo 14px, máximo 28px, creciendo según el ancho de la ventana (4vw). */
+        transition: none; /* Evita animaciones raras: ajuste instantáneo */
+        will-change: transform; /* Le avisa al navegador que 'transform' cambiará, optimizando el renderizado de la animación. */
+      }
+    }
+
+    /* ===== Página ===== */ /* Sección de estilos generales para la estructura y fondo de la página. */
+    @layer base {
+      html, body{
+        @apply m-0; /* Elimina el margen por defecto del navegador alrededor de la página. */
+        @apply overflow-x-hidden; /* Evita que aparezca barra de scroll horizontal si algo se sale un poco por los lados. */
+      }
+      body{
+        @apply text-center; /* Centra el texto de forma horizontal por defecto dentro del body. */
+        @apply bg-surface; /* Color de fondo base de la página (verde oscuro). */
+      }
+    }
+
+    @layer components {
+      .page{
+        background-image:var(--bg-url); /* Patrón directo en la página */
+        background-repeat:repeat; /* Repite el mosaico */
+        background-position:0 0; /* Ancla el patrón en la esquina superior izquierda */
+        background-size:auto; /* Mantiene el tamaño original del tile */
+
+        @apply min-h-screen; /* La sección .page siempre mide al menos el alto completo de la ventana (viewport). */
+
+        @apply flex; /* Usa Flexbox para organizar el contenido interno. */
+        @apply flex-col; /* Coloca los elementos hijos en una columna (uno debajo del otro). */
+        @apply items-center; /* Centra horizontalmente los elementos hijos dentro del contenedor. */
+
+        @apply gap-4; /* Espacio de 16px entre los elementos hijos (separación vertical en este caso). */
+        @apply px-page-pad pt-page-pad pb-0; /* Relleno: 10px arriba y a los lados, 0 abajo. */
+        @apply relative; /* Mantiene la posición normal, pero permite posicionar hijos de forma absoluta dentro de .page. */
+      }
+    }
+
+    /* ===== Título principal ===== */
+    @layer base {
+      h1{
+        @apply m-0; /* Elimina el margen superior e inferior que los <h1> traen por defecto. */
+        @apply text-ink; /* Color del texto: negro. */
+        @apply font-title; /* Usa Arial, o si no existe, otra fuente sans-serif. */
+        @apply font-bold; /* Mantiene el título en negrita; Tailwind Preflight quita la negrita por defecto. */
+      }
+    }
+
+    /* ===== Marco del GIF (Contenedor) ===== */
+    @layer components {
+      .img-redondeada{ /* Contenedor del GIF (o imagen) con bordes redondeados y estilo de tarjeta. */
+        max-width:var(--frame-max); /* Limita el ancho máximo para que no se haga demasiado grande en pantallas grandes. */
+        @apply w-full; /* Ocupa el 100% del espacio disponible hasta el máximo. */
+        @apply rounded-lg; /* Esquinas redondeadas del marco. */
+        @apply border-thick border-white; /* Borde blanco grueso alrededor del GIF. */
+        @apply shadow-card; /* Sombra para dar sensación de elevación/3D. */
+        @apply overflow-hidden; /* Recorta lo que sobresalga de los bordes redondeados. */
+        @apply relative; /* Necesario para que elementos hijos (como la fecha) se posicionen de forma absoluta dentro. */
+      }
+
+      /* ===== Imagen dentro del marco ===== */
+      .img-redondeada img{ /* Imagen interna del marco. */
+        @apply block; /* Elimina el espacio en blanco de imágenes inline. */
+        @apply w-full; /* La imagen se adapta al ancho del marco. */
+        @apply h-auto; /* Mantiene proporción natural del GIF. */
+        object-fit:cover; /* La imagen se recorta para llenar el contenedor sin deformarse. */
+        object-position:center bottom; /* Enfoque desde el centro hacia abajo (útil si el GIF tiene algo importante en la parte baja). */
+        @apply relative z-img; /* Se asegura de que quede por debajo del badge de fecha. */
+      }
+
+      /* ===== Badge de Fecha (Etiqueta sobre el GIF) ===== */
+      .badge-fecha { /* Etiqueta/placa de la fecha que aparece encima del GIF en la esquina inferior izquierda. */
+        @apply absolute; /* Se posiciona libremente dentro del contenedor (.img-redondeada). */
+        @apply left-0 bottom-0; /* Ubicación exacta: esquina inferior izquierda. */
+        background: none; /* Sin fondo sólido (puede superponerse directamente sobre el GIF). */
+        @apply text-white; /* Texto blanco para contrastar con el GIF. */
+
+        @apply font-badge; /* Fuente más amigable y redondeada. */
+        @apply font-black; /* Peso muy grueso: texto fuerte y destacado. */
+        font-size: clamp(18px, 5vw, 26px); /* Tamaño adaptable: más grande que antes. */
+        line-height: 1.2; /* Altura de línea compacta, mejora la lectura si son dos líneas. */
+        letter-spacing: 0.1px; /* Muy leve separación entre caracteres para claridad. */
+
+        padding: 8px 10px; /* Relleno interno: espacio entre borde y texto. */
+        border-top-right-radius: 10px; /* Redondea solo la esquina superior derecha (estilo de etiqueta pegada a un borde). */
+        @apply text-left; /* Alineación del texto. */
+        @apply whitespace-pre-line; /* Permite saltos de línea si los pones dentro del texto. */
+        @apply select-none; /* Evita que el usuario pueda seleccionar el texto accidentalmente. */
+
+        @apply z-badge; /* Se muestra por encima de la imagen (que está en z-index:1). */
+      }
+    }
+
+    /* ===== iframes ocultos pero reproducibles (visually-hidden) ===== */
+    #yt-audio{
+      position: absolute !important; /* Lo saca del flujo normal sin eliminarlo. Necesario para ocultarlo pero mantener audio activo. */
+      left: 0 !important; /* Fijado al borde superior izquierdo (común en técnicas de hiding). */
+      top: 0 !important;
+      width: 1px !important; /* Tamaño mínimo para evitar que el iframe ocupe espacio real. */
+      height: 1px !important;
+      margin: -1px !important; /* Esto hace que ese “1px” quede fuera de vista visual. */
+      padding: 0 !important;
+      overflow: hidden !important; /* Evita mostrar contenido interno. */
+      opacity: 0 !important; /* Completamente invisible. */
+      pointer-events: none !important; /* El usuario no puede interactuar (click, hover). */
+      border: 0 !important; /* oculto visualmente sin sacarlo del flujo ni mandarlo offscreen */
+      clip: rect(0 0 0 0) !important; /* Método antiguo: recorta todo el elemento. */
+      clip-path: inset(50%) !important; /* Método moderno: lo “recorta” visualmente. */
+    }
+
+    #yt-audio iframe{
+      width: 1px !important; /* El iframe interno también tiene 1px para evitar layout shift. */
+      height: 1px !important;
+      border: 0 !important;
+      display: block !important; /* Evita espacio extra de inline-elements. */
+    }
+
+    /* ===== Barra música ===== */
+    @layer components {
+      .barra-musica {
+        --turquesa:var(--color-bar); /* Variable interna del componente */
+        --borde-claro:var(--color-bar-border); /* Variable interna del componente */
+        @apply w-full mx-auto; /* Ancho + centrado */
+        @apply bg-bar; /* Fondo */
+        @apply border-4 border-bar-line; /* Borde */
+        @apply rounded-pill; /* Bordes redondeados */
+        @apply px-bar-pad-x py-bar-pad-y; /* Padding */
+        @apply flex items-center justify-center; /* Layout */
+        @apply flex-nowrap; /* Flex-wrap */
+        @apply gap-bar-gap; /* Separación */
+        @apply shadow-bar; /* Sombra */
+        @apply relative z-bar; /* Posición */
+        transition:opacity .2s, filter .2s; /* Animación suave al cambiar de modo oscuro o cuando algo afecte opacity. */
+      }
+
+      .oscuro .barra-musica { 
+        opacity:.85; 
+        filter:saturate(.75) brightness(.85); /* Tema oscuro */
+      }
+
+      .icon-btn {
+        @apply h-11 w-11 flex-none; /* Tamaño */
+        @apply rounded-full; /* Bordes redondeados */
+        @apply border-btn border-white; /* Borde */
+        @apply bg-transparent text-white cursor-pointer; /* Fondo + texto + cursor */
+        @apply grid place-items-center; /* Layout */
+        @apply cursor-pointer; /* Cursor */
+        transition:background-color .2s, transform .05s, opacity .2s; /* Animación suave del hover, active y cualquier cambio de opacidad. */
+      }
+
+      .icon-btn:hover { background-color:var(--white-12); } /* Hover: cuando el mouse pasa encima del botón, se ilumina levemente */
+      .icon-btn:active { transform:scale(.98); } /* Active (pseudo): mientras se hace clic o se mantiene presionado, el botón se “hunde” */
+
+      .icon-btn svg { 
+        @apply h-5 w-5; 
+        display:block; 
+      } /* Tamaño del ícono SVG y display:block evita espacios indeseados */
+
+      .icon-btn.active { background-color:var(--white-18); } /* Clase .active: estado «encendido» cuando lo activa el JS */
+
+      /* ===== Slider volumen (MÚSICA) ===== */
+      .volume-slider {
+        appearance:none; /* Estándar */
+        -webkit-appearance:none; /* Prefijo WebKit */
+        flex:1 1 160px; /* Se estira, puede reducirse, base 160px: funciona bien en flexbox */
+        max-width:320px; /* En pantallas grandes crece hasta 320px */
+        @apply min-w-0; /* Evita overflow */
+        @apply h-slider-track-h; /* Alto del track */
+        @apply rounded-pill; /* Bordes redondeados */
+        @apply bg-white-65; /* Fondo */
+        @apply outline-none; /* Sin outline */
+        @apply cursor-pointer; /* Cursor */
+        @apply appearance-none; /* Reset visual */
+      }
+    }
+
+    /* Thumb (punto que se arrastra) */
+    .volume-slider::-webkit-slider-thumb{
+      -webkit-appearance:none; appearance:none; /* Elimina estilo por defecto */
+      width:var(--slider-thumb); height:var(--slider-thumb); border-radius:50%; background:var(--color-white); /* Circulito blanco */
+      border:2px solid var(--turquesa); /* Borde del color del tema */
+      box-shadow:var(--shadow-thumb); /* Sombra ligera */
+    }
+
+    /* Thumb — Firefox */
+    .volume-slider::-moz-range-thumb{
+      width:var(--slider-thumb); height:var(--slider-thumb); border-radius:50%; background:var(--color-white);
+      border:2px solid var(--turquesa); box-shadow:var(--shadow-thumb);
+    }
+    
+    /* Track — Firefox */
+    .volume-slider::-moz-range-track{
+      height:var(--slider-track-h); border-radius:var(--radius-pill); background:var(--white-65);
+    }
+
+    /* ======= Tirita sol/luna ======= */
+
+    /* Animación de “estirarse” de la barra al hacer clic */
+    @keyframes stretch{ 
+      0%{transform:translateZ(0) scaleY(1)} 
+      50%{transform:translateZ(0) scaleY(1.06)} /* Se estira un poquito */
+      100%{transform:translateZ(0) scaleY(1)} 
+    }
+
+    @layer components {
+      /* Contenedor principal fijo al lado derecho */
+      .right-handle{ 
+        --thumb:34px; --strip-h:220px; /* Variables: tamaño del botón y altura de la tirita */
+        @apply fixed; /* Siempre visible en pantalla */
+        @apply top-0 right-4; /* Arriba a la derecha */
+        @apply z-handle; /* Sobre casi todo lo demás */
+        @apply pointer-events-none; /* El contenedor no recibe clics, solo sus hijos */
+        @apply flex items-start justify-center; /* Alineación vertical */
+      }
+      
+      /* Barra vertical (la tirita) */
+      .right-handle .track{
+        @apply relative; 
+        @apply w-6; /* Ancho base */
+        height:var(--strip-h); /* Altura controlada por la variable */
+        @apply bg-paper; /* Color crema */
+        @apply rounded-none; 
+        margin-bottom:calc(var(--thumb)*.5); /* Espacio para que el botón no se corte */
+        @apply shadow-handle; /* Sombras dobles */
+        @apply pointer-events-auto; /* Esta parte sí recibe clics */
+        transform-origin:top center; /* Punto de origen para la animación stretch */
+        @apply cursor-pointer; 
+        transition:box-shadow .18s, background .18s; /* Cambio suave al pasar el mouse */
+      }
+
+      /* Hover en la barra */
+      .right-handle .track:hover{ 
+        @apply bg-paper-2; /* Más clarito */
+        @apply shadow-handle-hover; 
+      }
+
+      /* Cuando se activa la animación stretch */
+      .right-handle .track.stretch{ 
+        animation:stretch 220ms ease-out; 
+      }
+
+      /* Botón circular (sol/luna) */
+      .right-handle .thumb{
+        @apply absolute; 
+        left:50%; transform:translateX(-50%); /* Centrado horizontal */
+        width:var(--thumb); height:var(--thumb); /* Tamaño según variable */
+        @apply rounded-full; /* Perfectamente redondo */
+        @apply border-btn border-white; 
+        @apply grid place-items-center; /* Centra el ícono SVG */
+        bottom:calc(-1 * var(--thumb) * .5); /* Sale “medio afuera” de la tirita */
+        transition:background 160ms, color 160ms, box-shadow 160ms, transform 80ms; /* Animaciones */
+        @apply cursor-pointer; 
+        @apply text-accent-dark bg-accent; /* Color de “sol” */
+        @apply shadow-thumb-lg;
+        @apply pointer-events-auto; /* Sí recibe clics */
+      }
+      
+      /* Hover del botón (crece apenas) */
+      .right-handle .thumb:hover{ 
+        transform:translateX(-50%) scale(1.03); 
+      }
+
+      /* Ícono dentro del botón */
+      .right-handle .thumb svg{ 
+        width:18px; height:18px; display:block; 
+      }
+
+      /* Estado “modo oscuro” (cuando la clase .activo está activada) */
+      .right-handle.activo .thumb{ 
+        @apply bg-ink-2; /* Fondo oscuro */
+        @apply text-white; /* Ícono blanco */
+      }
+
+      /* ===== Oscurecido ===== */
+      .dim-overlay{ 
+        @apply fixed; /* Cubre toda la pantalla aunque haya scroll */
+        @apply inset-0; /* Atajo para top:0; right:0; bottom:0; left:0 */
+        @apply bg-shadow-45; /* Capa oscura semitransparente */
+        @apply opacity-0; /* Inicialmente invisible */
+        @apply invisible; /* No recibe clics cuando está oculto */
+        transition:opacity 160ms, visibility 160ms; /* Fade suave */
+        @apply z-overlay; /* Debajo de la tirita (z=30), encima del resto */
+        @apply pointer-events-none; /* No bloquea clics a menos que se active */
+      }
+
+      /* Cuando el overlay está activo, aparece */
+      .dim-overlay.activo{ 
+        @apply opacity-100; 
+        @apply visible; 
+      }
+    }
+
+    /* ===== Frame: mismo ancho para GIF y barra ===== */
+    @layer components {
+      .frame{ 
+        @apply w-full; /* Ocupa el ancho disponible */
+        max-width:var(--frame-max); /* Límite de ancho */
+        @apply mx-auto; /* Centrado */
+      }
+    }
+
+    /* ===== Fullscreen (F11 / Fullscreen API) ===== */
+    html.browser-fullscreen{
+      --frame-max:min(1400px, 92vw); /* Expansión suave solo en fullscreen */
+    }
+
+    /* Asegura que GIF y barra tengan el mismo ancho */
+    .frame .img-redondeada, 
+    .frame .barra-musica{ 
+      width:100%; 
+      max-width:none; 
+    }
+
+    /* --- separación entre GIF y barra (página y Notion) --- */
+    .frame .barra-musica{
+      margin-top: var(--frame-gap); /* espacio extra debajo del GIF */
+    }
+
+    /* En embeds de Notion — a veces hay CSS que pisa el tuyo */
+    html.embed-notion .barra-musica{
+      margin-top: var(--frame-gap) !important; /* Se fuerza para evitar bugs */
+    }
+
+    /* ===== Ajustes móviles generales ===== */
+    @media (max-width:520px){
+
+      .barra-musica{ 
+        @apply px-bar-pad-compact-x py-bar-pad-compact-y; /* Menos padding para pantallas pequeñas */
+        @apply gap-bar-gap-compact; /* Menor separación entre íconos */
+      }
+
+      .icon-btn{ 
+        @apply w-9 h-9; /* Botones más pequeños */
+        flex-basis:36px; /* Mantiene el ancho base en flex */
+      }
+
+      .volume-slider{ 
+        @apply min-w-0; 
+        @apply max-w-none; /* Permite que el slider se ajuste en móviles */
+      }
+
+      .volume-slider::-webkit-slider-thumb{ 
+        width:12px; height:12px; /* Thumb más pequeño */
+      }
+
+      .volume-slider::-moz-range-thumb{ 
+        width:12px; height:12px; 
+      }
+
+      /* --- Alto tipo “vertical” en móviles --- */
+      .frame .img-redondeada{
+        height: 72vh;       /* Ocupa ~72% del alto visible del móvil */
+        max-height: 80vh;   /* Evita que sea demasiado grande */
+        @apply w-full;
+      }
+
+      .frame .img-redondeada img{
+        @apply w-full;
+        @apply h-full;
+        object-fit: cover;  /* Imagen recortada, bien centrada */
+        object-position: center bottom;
+      }
+    }
+
+    /* ===== Ajustes móviles extra (pantallas muy pequeñas) ===== */
+    @media (max-width:380px){
+      .page{ @apply px-2 pt-2 pb-0; } /* Reduce padding general para pantallas súper chicas */
+      .right-handle{ @apply right-2; --strip-h:160px; } /* Acerca la tirita y la hace más corta */
+      .icon-btn{ @apply w-10 h-10; } /* Botones un poco más pequeños */
+      .volume-slider::-webkit-slider-thumb{ width:14px; height:14px; } /* Thumb más chico en Chrome/Opera */
+      .volume-slider::-moz-range-thumb{ width:14px; height:14px; } /* Thumb más chico en Firefox */
+    }
+
+    /* En pantallas ultrapequeñas (celulares mini), oculta la tirita */
+    @media (max-width:320px){ 
+      .right-handle{ @apply hidden; } /* Evita que tape contenido */
+    }
+
+    /* ===== Notion embed: limpio y sin cortes ===== */
+
+    /* Quita fondo en Notion (su iframe ya maneja su propio fondo) */
+    html.embed-notion, 
+    html.embed-notion body{ 
+      background:transparent!important; 
+    }
+
+    /* Quita fondo, padding y otras propiedades de la página */
+    html.embed-notion .page{ 
+      --bg-url:none!important; 
+      background:transparent!important; 
+      padding:0!important; 
+    }
+
+    /* Oculta el título en Notion */
+    html.embed-notion .title-wrap{ 
+      display:none!important; 
+    }
+
+    /* Oculta tirita y overlay en Notion (no sirven dentro del iframe) */
+    html.embed-notion .right-handle, 
+    html.embed-notion .dim-overlay{ 
+      display:none!important; 
+    }
+
+    /* Asegura que el frame se adapte a Notion sin cortes */
+    html.embed-notion .frame{ 
+      display:block!important; 
+      max-width:100%!important; 
+      min-width:0!important; 
+    }
+
+    /* Quita bordes y sombras que se ven mal en el embed */
+    html.embed-notion .img-redondeada,
+    html.embed-notion .barra-musica{ 
+      border:0!important; 
+    }
+
+    html.embed-notion .img-redondeada{ 
+      border-radius:var(--radius-lg)!important; 
+    }
+
+    /* Extra: evita sombras en Notion */
+    html.embed-notion .img-redondeada, 
+    html.embed-notion .barra-musica, 
+    html.embed-notion .icon-btn{ 
+      box-shadow:none!important; 
+    }
+
+    /* La barra NO se debe cortar: permite que pase a 2 filas */
+    html.embed-notion .barra-musica{
+      flex-wrap:wrap!important; /* Permite salto a otra línea */
+      padding:var(--bar-pad-compact)!important; /* Más compacto */
+      gap:var(--bar-gap-compact)!important; /* Menos separación */
+      min-width:0!important; /* Previene cortes raros con flex */
+    }
+
+    /* Orden y comportamiento responsive de los controles dentro de Notion */
+    html.embed-notion .volume-slider{
+      order:2!important;            /* El slider pasa a la segunda fila (abajo) en Notion */
+      flex:1 1 100%!important;      /* Puede crecer y ocupar el 100% del ancho disponible */
+      width:100%!important;         /* Asegura que ocupe toda la fila */
+      max-width:none!important;     /* Evita límites de ancho heredados */
+      min-width:0!important;        /* Previene cortes raros con flexbox */
+      transform:none!important;     /* Desactiva cualquier transformación aplicada fuera de Notion */
+    }
+
+    /* Botones (play/pause, lluvia, GIF shuffle) → se ordenan arriba */
+    html.embed-notion #musicToggle,
+    html.embed-notion #rainToggle,
+    html.embed-notion #gifShuffle{ 
+      order:1!important;            /* Todos los botones se alinean en la primera fila */
+    }
